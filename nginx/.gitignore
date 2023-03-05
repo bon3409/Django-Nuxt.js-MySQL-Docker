@@ -1,0 +1,5 @@
+/log
+/ssl
+
+/conf.d/*
+!/conf.d/my-nginx.temp

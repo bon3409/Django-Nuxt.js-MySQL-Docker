@@ -1,0 +1,45 @@
+upstream django {
+    server unix:/var/www/html/app.sock;
+}
+
+server {
+    listen       80;
+    listen       443 ssl;
+    listen       [::]:443 ssl;
+    server_name  ${SERVER_NAME}; # 要用環境變數去替換掉
+
+    charset utf-8;
+    client_max_body_size 75M;
+
+    ssl_certificate "/etc/nginx/ssl/ssl.pem";
+    ssl_certificate_key "/etc/nginx/ssl/ssl-key.pem";
+    ssl_session_cache shared:SSL:1m;
+    ssl_session_timeout  5m;
+    ssl_ciphers HIGH:!aNULL:!MD5;
+    ssl_prefer_server_ciphers on;
+
+    location ^~ /backend/static {
+        alias /var/www/html/static;
+    }
+
+    # location ^~ /backend/static {
+    #     alias /var/www/html/media;
+    # }
+    
+    location / {
+        proxy_pass       http://frontend:3000;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header Host $http_host;
+        proxy_redirect   off;
+    }
+
+    location /backend {
+		include     /etc/nginx/uwsgi_params;
+        uwsgi_pass  django;
+        uwsgi_param SCRIPT_NAME /backend;
+		uwsgi_param Host $host;
+		uwsgi_param X-Real-IP $remote_addr;
+		uwsgi_param X-Forwarded-For $proxy_add_x_forwarded_for;
+		uwsgi_param X-Forwarded-Proto $http_x_forwarded_proto;
+    }
+}

@@ -1,0 +1,76 @@
+version: '3'
+
+services:
+  nginx:
+    container_name: nginx
+    build: ./nginx
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    expose:
+      - "80"
+    volumes:
+      - 'api_data:/var/www/html'
+      - "./nginx/ssl:/etc/nginx/ssl"
+      - "./nginx/log:/var/log/nginx"
+      - "./nginx/conf.d:/etc/nginx/conf.d"
+    environment:
+      - SERVER_NAME="${SERVER_NAME}"
+    # 在 command 的地方透過 envsubst 把環境變數 (server_name) 帶入 my-nginx.temp 裡面替換，並且建立新的檔案 (my-nginx.conf)
+    # 並且設定 nginx -g daemon off; 避免 nginx 執行一次之後就退出
+    # 參考資料: https://stackoverflow.com/a/56667581
+    command: /bin/bash -c "envsubst '$${SERVER_NAME}' < /etc/nginx/conf.d/my-nginx.temp > /etc/nginx/conf.d/my-nginx.conf && exec nginx -g 'daemon off;'"
+    depends_on:
+      - api
+      - frontend
+    links:
+      - api
+      - frontend
+ 
+  # Django 專案
+  api:
+    container_name: api
+    build: ./api
+    expose:
+      - "8000"
+    restart: always
+    volumes:
+      - "api_data:/var/www/html"
+    tty: true
+    depends_on:
+      - mysql
+
+  # Nuxt.js 專案
+  frontend:
+    container_name: frontend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NUXT_PORT=3000
+    build: ./frontend
+    volumes:
+      - './frontend/:/var/www/html'
+    tty: true
+
+  mysql:
+    container_name: mysql
+    image: 'mysql:8.0'
+    restart: unless-stopped
+    volumes:
+      - './mysql:/var/lib/mysql'
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=django
+      - MYSQL_PASSWORD=root
+    ports:
+      - '3306:3306'
+
+volumes:
+  api_data:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: api
