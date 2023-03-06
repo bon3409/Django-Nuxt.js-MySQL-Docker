@@ -61,11 +61,11 @@ services:
     volumes:
       - './mysql:/var/lib/mysql'
     environment:
-      - MYSQL_ROOT_PASSWORD=root
-      - MYSQL_DATABASE=django
-      - MYSQL_PASSWORD=root
+      - MYSQL_ROOT_PASSWORD="${MYSQL_ROOT_PASSWORD}"
+      - MYSQL_DATABASE="${MYSQL_DATABASE}"
+      - MYSQL_PASSWORD="${MYSQL_PASSWORD}"
     ports:
-      - '3306:3306'
+      - '${MYSQL_PORT}:3306'
 
 volumes:
   api_data:
