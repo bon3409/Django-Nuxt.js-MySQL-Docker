@@ -20,6 +20,9 @@ RUN /usr/local/bin/python -m pip install --upgrade pip
 
 RUN pip install -r requirements.txt
 
+# 在執行 pip install 的時候不用使用 root 的權限
+ENV PIP_ROOT_USER_ACTION=ignore
+
 # 去除 windows 系統編輯文件多餘的空格
 RUN sed -i 's/\r//' ./start.sh
 
