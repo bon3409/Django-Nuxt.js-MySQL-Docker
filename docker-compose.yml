@@ -40,6 +40,8 @@ services:
     tty: true
     depends_on:
       - mysql
+    links:
+      - mysql
 
   # Nuxt.js 專案
   frontend:
@@ -51,7 +53,8 @@ services:
       - NUXT_PORT=3000
     build: ./frontend
     volumes:
-      - './frontend/:/var/www/html'
+      - './frontend:/var/www/html'
+      - /var/www/html/node_modules
     tty: true
 
   mysql:
@@ -61,9 +64,9 @@ services:
     volumes:
       - './mysql:/var/lib/mysql'
     environment:
-      - MYSQL_ROOT_PASSWORD="${MYSQL_ROOT_PASSWORD}"
-      - MYSQL_DATABASE="${MYSQL_DATABASE}"
-      - MYSQL_PASSWORD="${MYSQL_PASSWORD}"
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
     ports:
       - '${MYSQL_PORT}:3306'
 

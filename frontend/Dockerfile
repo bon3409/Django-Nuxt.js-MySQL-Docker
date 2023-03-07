@@ -12,15 +12,13 @@ ENV NODE_ENV=development
 
 WORKDIR /var/www/html
 
-COPY package.json yarn.lock* ./
+COPY . .
 
-RUN yarn
+RUN yarn install
 
 ENV NUXT_HOST=0.0.0.0
 ENV NUXT_PORT=3000
 
 ENV PATH=./node_modules/.bin/:$PATH
-
-COPY . .
 
 CMD ["yarn", "dev"]
